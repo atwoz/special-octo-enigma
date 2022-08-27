@@ -51,6 +51,7 @@ const saveSensor = async (s) => {
     writeInt('pm10', s.pm10, s.id);
     writeInt('rssi', s.rssi, s.id);
     writeInt('snr', s.snr, s.id);
+    writeInt('counter', s.counter, s.id);
 
     await writeApi.flush();
 }
