@@ -1,12 +1,13 @@
-const {InfluxDB, Point, consoleLogger} =  require('@influxdata/influxdb-client');
+const {InfluxDB, Point} =  require('@influxdata/influxdb-client');
 const axios = require('axios').default;
 const {token, org, url, bucket, endpoint} = require('./env');
-const {names, location} = require('./names');
+const fs = require('fs');
 
 const writeApi = new InfluxDB({url, token}).getWriteApi(org, bucket, 's')
-writeApi.useDefaultTags({location: location})
+// writeApi.useDefaultTags({location: location})
 
 let db = {}
+let names = {}
 
 async function getVal() {
     try {
@@ -22,18 +23,18 @@ async function getVal() {
   }
 
 const writeFloat = (key, val, did) => {
-    let name = names[`${did}`] || 'Sin Nombre'
+    let name = names[`${did}`] || `${did}` 
     const point1 = new Point(key)
-    .tag('did',  did, 'name', name)
+    .tag('name', name)
     .floatField('value', val)
 
     writeApi.writePoint(point1);
 }
 
 const writeInt = (key, val, did) => {
-    let name = names[`${did}`] || 'Sin Nombre'
+    let name = names[`${did}`] || `${did}` 
     const point1 = new Point(key)
-    .tag('did',  did, 'name', name)
+    .tag('name', name)
     .intField('value', val)
 
     writeApi.writePoint(point1);
@@ -87,7 +88,27 @@ const insertLocally = (sensor) => {
     return isNew;
 }
 
+const getNames = () =>  {
+    let file = fs.readFileSync('../nombres.txt',
+            {encoding:'utf8', flag:'r'});
+
+    file = file.replaceAll('\r')
+    let rawNames = file.split('\n');
+    for (let name of rawNames) {
+        name = name.split('=')
+        if (name.length == 2) {
+            name[0] = name[0].trim().toLowerCase();
+            name[1] = name[1].trim().toLowerCase();
+            names[name[1]] = name[0];
+        }
+    }
+    console.log(names);
+}
+
 const main = async () => {
+
+    getNames();
+
     let data = await getVal();
 
     if (data == null) {
