@@ -102,7 +102,6 @@ const getNames = () =>  {
             names[name[1]] = name[0];
         }
     }
-    console.log(names);
 }
 
 const main = async () => {
